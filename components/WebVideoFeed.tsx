@@ -61,6 +61,7 @@ import { videoService } from '../services/videoService';
 import { storage } from '../utils/storage';
 import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
+import FeedStatus from './FeedStatus';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
 const { width } = Dimensions.get('window');
@@ -78,6 +79,7 @@ export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActiv
 
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     loadVideos();
@@ -86,12 +88,14 @@ export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActiv
   const loadVideos = async () => {
     try {
       setLoading(true);
+      setLoadFailed(false);
       const data = await videoService.getVideos(0, 20, filter === 'All' ? undefined : filter);
       console.log('📹 [WEB] Loaded from DB:', data.length, 'videos');
       
       setVideos(data);
     } catch (err) {
       console.error('❌ [WEB] Error loading videos:', err);
+      setLoadFailed(true);
       setVideos([]);
     } finally {
       setLoading(false);
@@ -264,6 +268,10 @@ export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActiv
    * Main render: Each child is a <WebVideoItem/> component
    */
   const WheelView: any = View;
+
+  if (loading) return <FeedStatus status="loading" />;
+  if (loadFailed) return <FeedStatus status="error" onRetry={loadVideos} />;
+  if (filteredData.length === 0) return <FeedStatus status="empty" onRetry={loadVideos} />;
 
   return (
     <WheelView

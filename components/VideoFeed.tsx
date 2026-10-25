@@ -40,14 +40,12 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   TouchableOpacity,
-  StyleSheet,
-  View,
-  ActivityIndicator,
-  Text
+  StyleSheet
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import VideoItem from './VideoItem';
+import FeedStatus from './FeedStatus';
 import { videoService } from '../services/videoService';
 import { Video } from '../types/database';
 
@@ -192,7 +190,7 @@ export default function VideoFeed({
       setVideos(data);
     } catch (err) {
       console.error('❌ Error loading videos:', err);
-      setError('Failed to load videos');
+      setError('load_failed');
       setVideos([]);
     } finally {
       setLoading(false);
@@ -352,18 +350,11 @@ export default function VideoFeed({
   return (
     <>
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D5FF" />
-          <Text style={styles.loadingText}>טוען סרטונים...</Text>
-        </View>
+        <FeedStatus status="loading" />
       ) : error ? (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color="#FF3B5C" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={loadVideos}>
-            <Text style={styles.retryText}>נסה שוב</Text>
-          </TouchableOpacity>
-        </View>
+        <FeedStatus status="error" onRetry={loadVideos} />
+      ) : filteredData.length === 0 ? (
+        <FeedStatus status="empty" onRetry={loadVideos} />
       ) : (
         <FlatList
       ref={flatListRef}
@@ -431,41 +422,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  loadingText: {
-    color: '#fff',
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
-  },
-  errorText: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  retryBtn: {
-    backgroundColor: '#00D5FF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  retryText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
