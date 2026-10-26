@@ -18,6 +18,7 @@
  * ✔ Opens modals:
  *      - CommentsModal
  *      - ItineraryModal (trip details)
+ *      - CaptionSheet (full caption, from the truncated caption's "עוד")
  * ✔ Uses local storage helpers to persist:
  *      - Likes
  *      - Saves
@@ -59,6 +60,7 @@ import { VideoData } from './VideoFeed';
 import { storage } from '../utils/storage';
 import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
+import CaptionSheet from './CaptionSheet';
 
 // Full-screen height/width
 const { height, width } = Dimensions.get('window');
@@ -584,6 +586,11 @@ const VideoOverlay = React.memo(function VideoOverlay({
   onInfluencer,
   onTagPress,
 }: OverlayProps) {
+  // Caption is shown in 2 lines; the full text opens in CaptionSheet
+  const caption = video.description?.trim() ?? '';
+  const captionIsLong = caption.length > CAPTION_PREVIEW_CHARS || caption.includes('\n');
+  const [captionVisible, setCaptionVisible] = useState(false);
+
   return (
     <View style={overlayStyles.container} pointerEvents="box-none">
       {/* RIGHT-SIDE ACTION BUTTONS */}
@@ -651,6 +658,20 @@ const VideoOverlay = React.memo(function VideoOverlay({
         </TouchableOpacity>
 
         <Text style={overlayStyles.title}>{video.title}</Text>
+
+        {caption.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setCaptionVisible(true)}
+            activeOpacity={0.8}
+            style={overlayStyles.captionBox}
+          >
+            <Text style={overlayStyles.caption} numberOfLines={2}>
+              {caption}
+            </Text>
+            {captionIsLong && <Text style={overlayStyles.captionMore}>עוד</Text>}
+          </TouchableOpacity>
+        )}
+
         <Text style={overlayStyles.days}>🗓️ {video.days} ימים</Text>
         <Text style={overlayStyles.location}>📍 {video.location}</Text>
 
@@ -684,6 +705,13 @@ const VideoOverlay = React.memo(function VideoOverlay({
           </TouchableOpacity>
         </View>
       </View>
+
+      <CaptionSheet
+        visible={captionVisible}
+        title={video.title}
+        caption={caption}
+        onClose={() => setCaptionVisible(false)}
+      />
     </View>
   );
 });
@@ -692,6 +720,9 @@ const VideoOverlay = React.memo(function VideoOverlay({
  *                           HELPERS + STYLES
  * =============================================================================
  */
+
+// Captions longer than this get a "עוד" link (2 lines on a phone ≈ 70 chars)
+const CAPTION_PREVIEW_CHARS = 70;
 
 function formatCount(num: number): string {
   if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
@@ -832,6 +863,26 @@ const overlayStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  captionBox: {
+    marginBottom: 6,
+  },
+  caption: {
+    color: '#fff',
+    fontSize: 13,
+    lineHeight: 18,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  captionMore: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 2,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
