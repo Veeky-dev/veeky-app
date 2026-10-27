@@ -61,6 +61,7 @@ import { videoService } from '../services/videoService';
 import { storage } from '../utils/storage';
 import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
+import CaptionSheet from './CaptionSheet';
 import FeedStatus from './FeedStatus';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
@@ -481,6 +482,20 @@ function WebVideoItem({
     onModalChange(false);
   };
 
+  // Caption is shown in 2 lines; "עוד" opens the full text in CaptionSheet
+  const caption = video.description?.trim() ?? '';
+  const [captionVisible, setCaptionVisible] = useState(false);
+
+  const handleCaption = () => {
+    setCaptionVisible(true);
+    onModalChange(true);
+  };
+
+  const handleCloseCaption = () => {
+    setCaptionVisible(false);
+    onModalChange(false);
+  };
+
   // Pause video when modal opens
   useEffect(() => {
     if (itineraryVisible && videoRef.current) {
@@ -627,6 +642,20 @@ function WebVideoItem({
           </TouchableOpacity>
 
           <Text style={styles.title}>{video.title}</Text>
+
+          {caption.length > 0 && (
+            <TouchableOpacity
+              onPress={handleCaption}
+              activeOpacity={0.8}
+              style={styles.captionBox}
+            >
+              <Text style={styles.caption} numberOfLines={2}>
+                {caption}
+              </Text>
+              <Text style={styles.captionMore}>עוד</Text>
+            </TouchableOpacity>
+          )}
+
           <Text style={styles.days}>🗓️ {video.days} ימים</Text>
           <Text style={styles.location}>📍 {video.location}</Text>
 
@@ -677,6 +706,14 @@ function WebVideoItem({
         visible={itineraryVisible}
         video={video}
         onClose={handleCloseItinerary}
+      />
+
+      {/* CAPTION SHEET */}
+      <CaptionSheet
+        visible={captionVisible}
+        title={video.title}
+        caption={caption}
+        onClose={handleCloseCaption}
       />
     </View>
   );
@@ -754,6 +791,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  captionBox: {
+    marginBottom: 6,
+  },
+  caption: {
+    color: '#fff',
+    fontSize: 13,
+    lineHeight: 18,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  captionMore: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 2,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,

@@ -586,9 +586,8 @@ const VideoOverlay = React.memo(function VideoOverlay({
   onInfluencer,
   onTagPress,
 }: OverlayProps) {
-  // Caption is shown in 2 lines; the full text opens in CaptionSheet
+  // Caption is shown in 2 lines; "עוד" opens the full text in CaptionSheet
   const caption = video.description?.trim() ?? '';
-  const captionIsLong = caption.length > CAPTION_PREVIEW_CHARS || caption.includes('\n');
   const [captionVisible, setCaptionVisible] = useState(false);
 
   return (
@@ -668,7 +667,7 @@ const VideoOverlay = React.memo(function VideoOverlay({
             <Text style={overlayStyles.caption} numberOfLines={2}>
               {caption}
             </Text>
-            {captionIsLong && <Text style={overlayStyles.captionMore}>עוד</Text>}
+            <Text style={overlayStyles.captionMore}>עוד</Text>
           </TouchableOpacity>
         )}
 
@@ -720,9 +719,6 @@ const VideoOverlay = React.memo(function VideoOverlay({
  *                           HELPERS + STYLES
  * =============================================================================
  */
-
-// Captions longer than this get a "עוד" link (2 lines on a phone ≈ 70 chars)
-const CAPTION_PREVIEW_CHARS = 70;
 
 function formatCount(num: number): string {
   if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
