@@ -26,6 +26,7 @@
 
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './navigation/RootNavigator';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -57,22 +58,24 @@ export default function App() {
      * Provides global light/dark theme state to the entire app.
      * All screens and components can access it via useTheme().
      */
-    <ThemeProvider>
-      {/**
-       * NavigationContainer:
-       * --------------------------------------------------------------
-       * Required by React Navigation.
-       * Manages navigation state, deep linking, and screen transitions.
-       */}
-      <NavigationContainer linking={linking}>
+    <SafeAreaProvider>
+      <ThemeProvider>
         {/**
-         * RootNavigator:
+         * NavigationContainer:
          * --------------------------------------------------------------
-         * Defines the complete navigation structure of the app:
-         * stacks, tabs, and screen hierarchy.
+         * Required by React Navigation.
+         * Manages navigation state, deep linking, and screen transitions.
          */}
-        <RootNavigator />
-      </NavigationContainer>
-    </ThemeProvider>
+        <NavigationContainer linking={linking}>
+          {/**
+           * RootNavigator:
+           * --------------------------------------------------------------
+           * Defines the complete navigation structure of the app:
+           * stacks, tabs, and screen hierarchy.
+           */}
+          <RootNavigator />
+        </NavigationContainer>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

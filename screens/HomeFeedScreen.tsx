@@ -35,6 +35,7 @@ import {
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import VideoFeed from '../components/VideoFeed';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -100,12 +101,15 @@ export default function HomeFeedScreen({ route }: any) {
 
   const isWeb = Platform.OS === 'web';
 
+  // Keep the filter bar below the notch / status bar
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
       {/* -----------------------------------------------------------
            FILTER BAR (top navigation chips)
          ----------------------------------------------------------- */}
-      <View style={styles.filterBar}>
+      <View style={[styles.filterBar, { paddingTop: insets.top + 8 }]}>
         {filters.map((f) => (
           <TouchableOpacity
             key={f.key}
