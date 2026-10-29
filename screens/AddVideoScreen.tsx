@@ -22,10 +22,10 @@
  * ✔ Basic required-field validation is implemented
  * ✔ Upload is simulated via setTimeout (no backend yet)
  * ✔ Haptics are triggered for better UX
+ * ✔ Video file is picked from the device's file explorer (expo-document-picker)
  *
  * Future upgrades (planned):
  * --------------------------------------------------------------------
- * • Implement video picking (expo-image-picker or expo-document-picker)
  * • Upload to backend (multipart upload / presigned URLs / CDN)
  * • Validate formats (numeric values, currency formatting, tags parsing)
  * • Preview the selected video
@@ -42,6 +42,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
 import { haptics } from '../utils/haptics';
 
 /**
@@ -53,9 +54,10 @@ type Category = 'Trips' | 'Lodging' | 'Entertainment';
 export default function AddVideoScreen() {
   /**
    * Form state (controlled inputs).
-   * - videoUri is reserved for the future picker integration.
+   * - videoUri / videoName come from the file picker (local file, not uploaded yet).
    */
   const [videoUri, setVideoUri] = useState('');
+  const [videoName, setVideoName] = useState('');
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
@@ -72,15 +74,29 @@ export default function AddVideoScreen() {
   /**
    * pickVideo()
    *
-   * Placeholder for selecting a local video file.
-   * In the real app, this will store the picked video URI into `videoUri`.
+   * Opens the device's file explorer (Files on iOS, file manager on
+   * Android, file dialog on web), limited to video files, and stores
+   * the picked file's local URI and name.
    */
   const pickVideo = async () => {
     haptics.light();
 
-    // TODO: Implement video picker
-    // Likely options: expo-image-picker or expo-document-picker
-    alert('בחירת וידאו - יש לממש עם expo-image-picker');
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'video/*',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+
+      if (result.canceled || !result.assets?.length) return;
+
+      const file = result.assets[0];
+      setVideoUri(file.uri);
+      setVideoName(file.name);
+      haptics.success();
+    } catch {
+      alert('לא הצלחנו לפתוח את הקבצים, נסה שוב');
+    }
   };
 
   /**
@@ -95,6 +111,11 @@ export default function AddVideoScreen() {
    * - Send metadata to backend
    */
   const handleUpload = async () => {
+    if (!videoUri) {
+      alert('צריך לבחור וידאו קודם');
+      return;
+    }
+
     if (!title || !location || !price || !days) {
       alert('נא למלא את כל השדות');
       return;
@@ -115,6 +136,7 @@ export default function AddVideoScreen() {
       setDays('');
       setTags('');
       setVideoUri('');
+      setVideoName('');
     }, 2000);
   };
 
@@ -133,10 +155,14 @@ export default function AddVideoScreen() {
          ------------------------------------------------------------ */}
       <TouchableOpacity style={styles.videoPicker} onPress={pickVideo}>
         {videoUri ? (
-          // If a video URI exists (future), show a "selected" state
+          // A video was picked: show its name, tap again to replace it
           <View style={styles.videoPreview}>
             <Ionicons name="videocam" size={48} color="#00D5FF" />
             <Text style={styles.videoText}>וידאו נבחר</Text>
+            <Text style={styles.videoName} numberOfLines={1}>
+              {videoName}
+            </Text>
+            <Text style={styles.videoHint}>לחץ להחלפה</Text>
           </View>
         ) : (
           // Default empty state (no video selected yet)
@@ -334,6 +360,17 @@ const styles = StyleSheet.create({
     color: '#00D5FF',
     fontSize: 16,
     marginTop: 12,
+  },
+  videoName: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 6,
+    paddingHorizontal: 24,
+  },
+  videoHint: {
+    color: '#666',
+    fontSize: 13,
+    marginTop: 4,
   },
   section: {
     paddingHorizontal: 16,
