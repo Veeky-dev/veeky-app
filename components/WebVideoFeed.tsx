@@ -76,7 +76,12 @@ type WebVideoFeedProps = {
 };
 
 export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActive = true }: WebVideoFeedProps) {
-  const { height } = useWindowDimensions();
+  const { height: windowHeight } = useWindowDimensions();
+
+  // Each video fills the feed area (between the filter bar and the tab bar),
+  // not the whole window, so the overlay isn't pushed up behind the tab bar.
+  const [feedHeight, setFeedHeight] = useState(0);
+  const height = feedHeight || windowHeight;
 
   const [videos, setVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,6 +171,11 @@ export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActiv
       playIndex(activeIndex);
     }
   }, [feedActive, activeIndex, filteredData.length]);
+
+  // Keep the current video aligned when the feed area is measured or resized
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: height * activeIndexRef.current, animated: false });
+  }, [height]);
 
   useEffect(() => {
     if (!initialVideoId) return;
@@ -277,6 +287,7 @@ export default function WebVideoFeed({ filter = 'All', initialVideoId, feedActiv
   return (
     <WheelView
       style={{ flex: 1 }}
+      onLayout={(e: any) => setFeedHeight(Math.round(e.nativeEvent.layout.height))}
       {...(Platform.OS === 'web' ? { onWheel: handleWheel } : {})}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -595,6 +606,27 @@ function WebVideoItem({
           </View>
         )}
 
+        {/* TAGS ROW (top of the video, under the filter bar) */}
+        {video.tags && Array.isArray(video.tags) && video.tags.length > 0 && (
+          <ScrollView
+            style={styles.tagsScroll}
+            contentContainerStyle={styles.tagsContent}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {video.tags.map((tag) => (
+              <TouchableOpacity
+                key={tag}
+                style={styles.tagPill}
+                onPress={() => handleTagPress(tag)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.tagText}>#{tag}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
         {/* RIGHT ACTION BUTTONS */}
         <View style={styles.rightActions}>
           <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
@@ -656,28 +688,7 @@ function WebVideoItem({
             </TouchableOpacity>
           )}
 
-          <Text style={styles.days}>🗓️ {video.days} ימים</Text>
           <Text style={styles.location}>📍 {video.location}</Text>
-
-          {video.tags && Array.isArray(video.tags) && video.tags.length > 0 && (
-            <ScrollView
-              style={styles.tagsScroll}
-              contentContainerStyle={styles.tagsContent}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            >
-              {video.tags.map((tag) => (
-                <TouchableOpacity
-                  key={tag}
-                  style={styles.tagPill}
-                  onPress={() => handleTagPress(tag)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.tagText}>#{tag}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
 
           <View style={styles.buttons}>
             <TouchableOpacity
@@ -748,7 +759,7 @@ const styles = StyleSheet.create({
   rightActions: {
     position: 'absolute',
     right: 12,
-    bottom: 120,
+    bottom: 24,
     gap: 20,
   },
   actionBtn: {
@@ -765,7 +776,7 @@ const styles = StyleSheet.create({
   },
   bottomInfo: {
     position: 'absolute',
-    bottom: 140,
+    bottom: 16,
     left: 12,
     right: 80,
   },
@@ -815,18 +826,10 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  days: {
-    color: '#fff',
-    fontSize: 13,
-    marginBottom: 2,
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
   location: {
     color: '#fff',
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: 10,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -838,14 +841,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagsScroll: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    right: 0,
     maxHeight: 34,
-    marginBottom: 8,
   },
   tagsContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingRight: 12,
+    paddingHorizontal: 12,
   },
   tagPill: {
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -865,7 +871,7 @@ const styles = StyleSheet.create({
   },
   detailsBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#fff',
@@ -879,7 +885,7 @@ const styles = StyleSheet.create({
   },
   bookBtn: {
     backgroundColor: '#00D5FF',
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 12,
     flex: 1,
     alignItems: 'center',

@@ -592,6 +592,27 @@ const VideoOverlay = React.memo(function VideoOverlay({
 
   return (
     <View style={overlayStyles.container} pointerEvents="box-none">
+      {/* TAGS ROW (top of the video, under the filter bar) */}
+      {video.tags && video.tags.length > 0 && (
+        <ScrollView
+          style={overlayStyles.tagsScroll}
+          contentContainerStyle={overlayStyles.tagsContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {video.tags.map((tag) => (
+            <TouchableOpacity
+              key={tag}
+              style={overlayStyles.tagPill}
+              onPress={() => onTagPress(tag)}
+              activeOpacity={0.8}
+            >
+              <Text style={overlayStyles.tagText}>#{tag}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
       {/* RIGHT-SIDE ACTION BUTTONS */}
       <View style={overlayStyles.rightActions}>
         <TouchableOpacity 
@@ -671,28 +692,7 @@ const VideoOverlay = React.memo(function VideoOverlay({
           </TouchableOpacity>
         )}
 
-        <Text style={overlayStyles.days}>🗓️ {video.days} ימים</Text>
         <Text style={overlayStyles.location}>📍 {video.location}</Text>
-
-        {video.tags && video.tags.length > 0 && (
-          <ScrollView
-            style={overlayStyles.tagsScroll}
-            contentContainerStyle={overlayStyles.tagsContent}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
-            {video.tags.map((tag) => (
-              <TouchableOpacity
-                key={tag}
-                style={overlayStyles.tagPill}
-                onPress={() => onTagPress(tag)}
-                activeOpacity={0.8}
-              >
-                <Text style={overlayStyles.tagText}>#{tag}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
 
         <View style={overlayStyles.buttons}>
           <TouchableOpacity style={overlayStyles.detailsBtn} onPress={onDetails}>
@@ -883,14 +883,6 @@ const overlayStyles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  days: {
-    color: '#fff',
-    fontSize: 13,
-    marginBottom: 2,
-    textShadowColor: 'rgba(0,0,0,0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
   location: {
     color: '#fff',
     fontSize: 13,
@@ -900,14 +892,17 @@ const overlayStyles = StyleSheet.create({
     textShadowRadius: 3,
   },
   tagsScroll: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    right: 0,
     maxHeight: 34,
-    marginBottom: 8,
   },
   tagsContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingRight: 12,
+    paddingHorizontal: 12,
   },
   tagPill: {
     backgroundColor: 'rgba(0,0,0,0.55)',
