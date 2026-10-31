@@ -62,6 +62,7 @@ import { storage } from '../utils/storage';
 import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
 import CaptionSheet from './CaptionSheet';
+import { space } from '../theme/spacing';
 import FeedStatus from './FeedStatus';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
@@ -758,13 +759,13 @@ const styles = StyleSheet.create({
   },
   rightActions: {
     position: 'absolute',
-    right: 12,
-    bottom: 24,
-    gap: 20,
+    right: space.md,
+    bottom: space.xl,
+    gap: space.xl,
   },
   actionBtn: {
     alignItems: 'center',
-    gap: 4,
+    gap: space.xs,
   },
   actionText: {
     color: '#fff',
@@ -776,15 +777,15 @@ const styles = StyleSheet.create({
   },
   bottomInfo: {
     position: 'absolute',
-    bottom: 16,
-    left: 12,
+    bottom: space.lg,
+    left: space.md,
     right: 80,
   },
   influencerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: space.sm,
+    marginBottom: space.sm,
   },
   avatar: {
     fontSize: 32,
@@ -801,13 +802,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: space.xs,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
   captionBox: {
-    marginBottom: 6,
+    marginBottom: space.sm,
   },
   caption: {
     color: '#fff',
@@ -821,7 +822,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: space.xs,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -829,7 +830,7 @@ const styles = StyleSheet.create({
   location: {
     color: '#fff',
     fontSize: 13,
-    marginBottom: 10,
+    marginBottom: space.md,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -842,7 +843,7 @@ const styles = StyleSheet.create({
   },
   tagsScroll: {
     position: 'absolute',
-    top: 8,
+    top: space.sm,
     left: 0,
     right: 0,
     maxHeight: 34,
@@ -850,15 +851,15 @@ const styles = StyleSheet.create({
   tagsContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: space.sm,
+    paddingHorizontal: space.md,
   },
   tagPill: {
     backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginRight: 4,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    marginRight: space.xs,
   },
   tagText: {
     color: '#fff',
@@ -867,11 +868,11 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: space.sm,
   },
   detailsBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 10,
+    paddingVertical: space.md,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#fff',
@@ -885,7 +886,7 @@ const styles = StyleSheet.create({
   },
   bookBtn: {
     backgroundColor: '#00D5FF',
-    paddingVertical: 10,
+    paddingVertical: space.md,
     borderRadius: 12,
     flex: 1,
     alignItems: 'center',

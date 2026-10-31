@@ -61,6 +61,7 @@ import { storage } from '../utils/storage';
 import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
 import CaptionSheet from './CaptionSheet';
+import { space } from '../theme/spacing';
 
 // Full-screen height/width
 const { height, width } = Dimensions.get('window');
@@ -815,13 +816,13 @@ const overlayStyles = StyleSheet.create({
   },
   rightActions: {
     position: 'absolute',
-    right: 12,
+    right: space.md,
     bottom: 120,
-    gap: 20,
+    gap: space.xl,
   },
   actionBtn: {
     alignItems: 'center',
-    gap: 4,
+    gap: space.xs,
   },
   actionText: {
     color: '#fff',
@@ -834,14 +835,14 @@ const overlayStyles = StyleSheet.create({
   bottomInfo: {
     position: 'absolute',
     bottom: 140,
-    left: 12,
+    left: space.md,
     right: 80,
   },
   influencerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: space.sm,
+    marginBottom: space.sm,
   },
   avatar: {
     fontSize: 32,
@@ -858,13 +859,13 @@ const overlayStyles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: space.xs,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
   captionBox: {
-    marginBottom: 6,
+    marginBottom: space.sm,
   },
   caption: {
     color: '#fff',
@@ -878,7 +879,7 @@ const overlayStyles = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: space.xs,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -886,14 +887,14 @@ const overlayStyles = StyleSheet.create({
   location: {
     color: '#fff',
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: space.md,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
   tagsScroll: {
     position: 'absolute',
-    top: 8,
+    top: space.sm,
     left: 0,
     right: 0,
     maxHeight: 34,
@@ -901,15 +902,15 @@ const overlayStyles = StyleSheet.create({
   tagsContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: space.sm,
+    paddingHorizontal: space.md,
   },
   tagPill: {
     backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginRight: 4,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    marginRight: space.xs,
   },
   tagText: {
     color: '#fff',
@@ -918,11 +919,11 @@ const overlayStyles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: space.sm,
   },
   detailsBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 14,
+    paddingVertical: space.md,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#fff',
@@ -936,7 +937,7 @@ const overlayStyles = StyleSheet.create({
   },
   bookBtn: {
     backgroundColor: '#00D5FF',
-    paddingVertical: 14,
+    paddingVertical: space.md,
     borderRadius: 12,
     flex: 1,
     alignItems: 'center',
