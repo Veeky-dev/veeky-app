@@ -40,6 +40,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { elevation } from '../theme/elevation';
 import { storage } from '../utils/storage';
 
 type Props = {
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
 
   // Modal body
   content: {
+    ...elevation.sheet,
     height: '70%',
     backgroundColor: '#000',
     borderTopLeftRadius: 20,

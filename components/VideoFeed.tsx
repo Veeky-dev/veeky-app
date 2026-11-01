@@ -46,6 +46,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import VideoItem from './VideoItem';
 import FeedStatus from './FeedStatus';
+import { elevation } from '../theme/elevation';
 import { videoService } from '../services/videoService';
 import { Video } from '../types/database';
 
@@ -417,10 +418,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#00D5FF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    ...elevation.raised,
   },
 });

@@ -16,6 +16,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { elevation } from '../theme/elevation';
 
 type Props = {
   visible: boolean;
@@ -60,6 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   content: {
+    ...elevation.sheet,
     maxHeight: '50%',
     backgroundColor: '#000',
     borderTopLeftRadius: 20,

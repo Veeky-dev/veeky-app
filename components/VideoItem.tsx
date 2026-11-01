@@ -62,6 +62,7 @@ import CommentsModal from './CommentsModal';
 import ItineraryModal from './ItineraryModal';
 import CaptionSheet from './CaptionSheet';
 import { space } from '../theme/spacing';
+import { elevation } from '../theme/elevation';
 
 // Full-screen height/width
 const { height, width } = Dimensions.get('window');
@@ -906,6 +907,7 @@ const overlayStyles = StyleSheet.create({
     paddingHorizontal: space.md,
   },
   tagPill: {
+    ...elevation.chip,
     backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 999,
     paddingHorizontal: space.md,
