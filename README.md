@@ -71,119 +71,140 @@ We’ve set this project up from scratch — no boilerplate tabs, no unnecessary
 
 ## 📁 Project Structure & File Overview
 
-Here’s a breakdown of what each folder and file does in this repo.
+This five-minute guide explains where features live, how the app starts, and which parts use real data.
+Veeky uses **Expo SDK 54, React Native 0.81, React 19, and TypeScript** for iOS, Android, and web.
+Most user-facing copy is Hebrew. The frontend talks directly to **Supabase Auth and Postgres**;
+this repository contains no separate backend server.
 
----
+### Repository map
 
-### 📂 `assets/`
+```text
+veeky-app/
+├── index.js                 # Expo entry point
+├── App.tsx                  # Global providers, navigation container, deep links
+├── navigation/              # Auth flow, root stack, tabs, profile stack
+├── screens/                 # Complete screens and their UI/form state
+├── components/              # Video feeds, players, overlays, modals, loading UI
+├── services/                # Authentication and video database operations
+├── lib/                     # Shared Supabase client
+├── context/                 # Shared light/dark theme state
+├── types/                   # Database models and web JSX declarations
+├── utils/                   # In-memory interactions, haptics, thumbnail helpers
+├── assets/                  # App, Android adaptive, splash, and favicon images
+└── ...                      # Configuration and deployment files listed below
+```
 
-Contains all static assets used by the app — icons, splash images, etc.
+### Startup and navigation
 
-| File                | Purpose                                  |
-| ------------------- | ---------------------------------------- |
-| `icon.png`          | The app icon used across platforms       |
-| `splash-icon.png`   | The image shown while the app is loading |
-| `adaptive-icon.png` | Required by Android (for rounded icons)  |
-| `favicon.png`       | Used on web builds                       |
+1. [index.js](index.js) registers `App` with Expo.
+2. [App.tsx](App.tsx) wraps the app in `ThemeProvider` and React Navigation's
+   `NavigationContainer`, configures URL paths, and mounts `RootNavigator`.
+3. [navigation/RootNavigator.tsx](navigation/RootNavigator.tsx) listens for Supabase auth
+   changes, shows a loading indicator while resolving the session, and chooses the available screens.
+   It also defines route parameter types (`RootStackParamList`, `ProfileStackParamList`, and
+   `MainTabsParamList`).
 
----
+| Navigation level | Routes and behavior                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| Root stack       | Logged out: `Login`. Logged in: `MainTabs`, `Search`, `Influencer`. `Signup` is always registered. |
+| `MainTabs`       | Bottom tabs: `Home`, `AddVideo`, `Profile`.                                                        |
+| `Profile` stack  | `ProfileMain`, `Orders`, `Saves`, `Liked`, `Settings`.                                             |
 
-### 📂 `components/`
+URL paths such as `/login`, `/main/home`, `/search`, and `/influencer/:influencerId` are configured
+in `App.tsx`. Internal navigation can pass `Home` a `videoId` to jump to a video in the loaded feed.
+When adding a route, update its navigator and parameter types; add its URL mapping if needed.
 
-Reusable UI components will live here — anything that appears in multiple places.
+### Screens: where each feature starts
 
-Examples (you might create):
+| Files in `screens/`                                                                      | Responsibility                                                                                                                                   |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [LoginScreen.tsx](screens/LoginScreen.tsx), [SignupScreen.tsx](screens/SignupScreen.tsx) | Email/password forms, validation, signup email confirmation, and auth navigation. Signup also checks username availability directly in Supabase. |
+| [HomeFeedScreen.tsx](screens/HomeFeedScreen.tsx)                                         | Category chips, search entry, screen focus, and choosing the native or web feed.                                                                 |
+| [AddVideoScreen.tsx](screens/AddVideoScreen.tsx)                                         | Creator form for category, title, location, price, days, and tags. Picking and uploading video are unfinished.                                   |
+| [ProfileScreen.tsx](screens/ProfileScreen.tsx)                                           | Current auth user's name/email, local like/save counts, logout, and links into the profile stack.                                                |
+| [SavesScreen.tsx](screens/SavesScreen.tsx), [LikedScreen.tsx](screens/LikedScreen.tsx)   | Grids built by filtering demo videos against locally stored IDs.                                                                                 |
+| [OrdersScreen.tsx](screens/OrdersScreen.tsx)                                             | Orders empty state; booking history is unfinished.                                                                                               |
+| [SettingsScreen.tsx](screens/SettingsScreen.tsx)                                         | Theme toggle.                                                                                                                                    |
+| [SearchScreen.tsx](screens/SearchScreen.tsx)                                             | Searches demo videos by title, tags, location, or influencer.                                                                                    |
+| [InfluencerScreen.tsx](screens/InfluencerScreen.tsx)                                     | Influencer details and a demo video grid; opens a selected video in Home.                                                                        |
 
-- `VideoCard.tsx` – shows a single vacation video
-- `ReserveButton.tsx` – call-to-action used on feed & trip screens
-- `Tag.tsx` – for things like “Greece”, “Luxury”, “Adventure”
+### Video feed and shared UI
 
-Right now this folder is empty, and we’ll build it out as the app grows.
+`HomeFeedScreen` selects the feed with `Platform.OS`. The browser implementation is loaded through
+a conditional `require` because it uses DOM APIs and HTML `<video>` elements.
 
----
+| Files in `components/`                                                                                 | Responsibility                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [VideoFeed.tsx](components/VideoFeed.tsx)                                                              | Native `FlatList`, category fetches, one-video-per-swipe snapping, active item, and jump-to-video handling. Also exports `MOCK_DATA` used by other screens. |
+| [VideoItem.tsx](components/VideoItem.tsx)                                                              | Native playback through `expo-video`, gestures, progress, action buttons, captions, and modal visibility.                                                   |
+| [WebVideoFeed.tsx](components/WebVideoFeed.tsx)                                                        | Browser scrolling/playback and its own `WebVideoItem` implementation, including action buttons and overlays.                                                |
+| [CommentsModal.tsx](components/CommentsModal.tsx), [ItineraryModal.tsx](components/ItineraryModal.tsx) | Local comments and trip/day details. The itinerary's booking button currently closes the modal.                                                             |
+| [CaptionSheet.tsx](components/CaptionSheet.tsx)                                                        | Full caption sheet used by `VideoItem`.                                                                                                                     |
+| [FeedStatus.tsx](components/FeedStatus.tsx), [SkeletonLoader.tsx](components/SkeletonLoader.tsx)       | Shared feed loading/error/empty states with retry; a separate reusable animated placeholder, respectively.                                                  |
 
-### 📂 `navigation/`
+**Feed UI is implemented twice.** Changes to playback, gestures, overlays, or actions often need
+changes in both `VideoItem.tsx` and `WebVideoFeed.tsx`. Home passes `feedActive` so playback pauses
+when the user leaves the screen.
 
-Handles app routing and screen transitions using React Navigation.
+### Data flow, shared state, and current limits
 
-| File                | Purpose                                             |
-| ------------------- | --------------------------------------------------- |
-| `RootNavigator.tsx` | Defines all screens and how users move between them |
+- **Supabase connection:** [lib/supabase.ts](lib/supabase.ts) creates the shared client from
+  `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` in the environment (`.env` locally).
+  Web auth sessions use `window.localStorage`.
+- **Authentication:** [services/authService.ts](services/authService.ts) handles signup, login,
+  logout, current user, and session queries. Signup also attempts to insert a `profiles` row.
+  `RootNavigator` subscribes directly to auth state.
+- **Home feed:** Both feeds call [services/videoService.ts](services/videoService.ts), which
+  queries `videos` with joined `profiles`, newest first, optionally filtered by category. Each feed
+  currently requests the first 20 rows. Loading failures and empty results show `FeedStatus`;
+  **Home does not fall back to demo videos**. Pull-to-refresh on native currently simulates a delay.
+- **Demo and local state:** Search, Influencer, Saves, and Liked still read `MOCK_DATA` from
+  `VideoFeed.tsx`. [utils/storage.ts](utils/storage.ts) stores likes, saves, and comments in memory;
+  they reset on reload. Consequently, real feed items may be missing from those demo-based views.
+  `videoService` has create/like/save methods, but the current UI does not call them. Uploads and
+  bookings are unfinished.
+- **Data shapes:** [types/database.ts](types/database.ts) defines `Profile`, `Video`, `Like`,
+  `Save`, `Comment`, and `Follow`; `VideoData` in `VideoFeed.tsx` aliases `Video`. Some native UI and
+  demo data still expect legacy fields (`uri`, `influencer`, `likes`) rather than database fields
+  (`video_url`, `profile`, `likes_count`). That integration is unfinished and causes type mismatches.
+  [types/web.d.ts](types/web.d.ts) declares HTML `<video>` JSX support.
+- **Theme and helpers:** [context/ThemeContext.tsx](context/ThemeContext.tsx) exposes `useTheme()`
+  and a non-persisted dark/light toggle used by Profile and Settings. Auth screens use the system
+  color scheme; the feed has its own dark styles. [utils/haptics.ts](utils/haptics.ts) wraps native
+  vibration calls and skips web; [utils/thumbnails.ts](utils/thumbnails.ts) maps locations to
+  placeholder image URLs.
 
-This is where you’ll add or reorder screens (e.g., Login → Feed → Profile).
+### Configuration, builds, and supporting files
 
----
+| Location                                                                                                                               | What to know                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [app.json](app.json), `assets/`                                                                                                        | Expo identity/version, portrait orientation, Hermes/new architecture, platform settings, icons, splash, and `expo-video`/`expo-font` plugins. |
+| [package.json](package.json), [package-lock.json](package-lock.json)                                                                   | Dependencies, npm commands, exact dependency resolution, and Husky/lint-staged configuration.                                                 |
+| [tsconfig.json](tsconfig.json), [babel.config.js](babel.config.js)                                                                     | Strict TypeScript checking and Expo/Reanimated compilation.                                                                                   |
+| [eslint.config.mjs](eslint.config.mjs), [.prettierrc](.prettierrc), [.prettierignore](.prettierignore), [.editorconfig](.editorconfig) | Code rules, formatting, ignored formatting targets, and editor defaults.                                                                      |
+| [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml)                                                                     | Containerized Expo web development; Compose forwards port `8081`.                                                                             |
+| [vercel.json](vercel.json), [.vercelignore](.vercelignore)                                                                             | Static web export to `dist/`, SPA route rewrites to `index.html`, cache headers, and deployment exclusions.                                   |
+| [supabase-add-videos.sql](supabase-add-videos.sql)                                                                                     | Sample profile/video inserts for an existing database, rather than a complete schema or migration system.                                     |
+| [.gitignore](.gitignore), [.dockerignore](.dockerignore)                                                                               | Git and Docker exclusions. `node_modules/`, `.expo/`, and `dist/` are dependency/generated folders.                                           |
+| [CLAUDE.md](CLAUDE.md)                                                                                                                 | Repository development guidance; verify descriptions against the code when they differ.                                                       |
 
-### 📂 `screens/`
+### Where to make a change
 
-Each file here is a full **page** or **screen** in the app.
+- **New feature:** screen in `screens/`, route/types in `navigation/`, reusable UI in `components/`.
+- **Database behavior:** service in `services/`, models in `types/database.ts`, shared client in `lib/`.
+- **Feed behavior:** `HomeFeedScreen` for filters/focus; both platform implementations for playback/UI.
+- **Shared state:** `context/` for providers; `utils/storage.ts` for the current local interaction store.
 
-| File                 | Purpose                                                   |
-| -------------------- | --------------------------------------------------------- |
-| `LoginScreen.tsx`    | Starting screen — handles login and routes to Feed        |
-| `HomeFeedScreen.tsx` | Main screen — users scroll vacation videos                |
-| `ProfileScreen.tsx`  | User info, saved videos, uploaded content, settings, etc. |
+Useful commands from `package.json`:
 
-Every screen is built as a functional React component.
+| Command                                                         | Purpose                                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `npm start` / `npm run web` / `npm run android` / `npm run ios` | Start Expo or open a target platform.                                          |
+| `npm run build`                                                 | Export web assets into `dist/` (also available as `npm run web:build`).        |
+| `npm run typecheck` / `npm run lint`                            | Check TypeScript and code rules. Existing type mismatches are described above. |
+| `npm run prettier:check` / `npm run doctor`                     | Check formatting across the repo / Expo dependency health.                     |
 
----
-
-### 📄 `App.tsx`
-
-This is the main entry point of the app.
-
-All it does is set up the navigation system.
-
----
-
-### 📄 `app.json`
-
-This is the **Expo configuration file**. It defines global app settings:
-
-| Key           | Purpose                                 |
-| ------------- | --------------------------------------- |
-| `name`        | Display name of the app                 |
-| `slug`        | Project folder name (used in Expo URLs) |
-| `version`     | App version                             |
-| `orientation` | Portrait or landscape (we use portrait) |
-| `icon`        | Path to the app icon                    |
-| `splash`      | Splash screen shown on startup          |
-| `platforms`   | Supported platforms (ios, android, web) |
-
-You can customize this if you need a different splash screen or app icon.
-
----
-
-### 📄 `package.json`
-
-This is where **all dependencies and scripts** are tracked.
-
-- Use it when you install packages (e.g. `npm install react-native-video`)
-- It also defines your project name and version
-- Scripts like `npm start` or `npm run web` are defined here
-
-If you ever need to check what libraries are being used — start here.
-
----
-
-### 📄 `tsconfig.json`
-
-This file controls how **TypeScript** checks and builds your code.
-
-You don’t usually need to touch it, but it ensures:
-
-- Type safety (like autocomplete and prop checking)
-- Stronger error messages during development
-
----
-
-### 📄 `.gitignore`
-
-Tells Git which files to **ignore** in version control, like:
-
-- `node_modules/`
-- `.expo/`
-- `*.log` files
+There is currently no automated test suite or `test` script in this repository.
 
 ---
 
